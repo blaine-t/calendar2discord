@@ -7,10 +7,10 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::time::Duration;
 
-pub async fn event_to_discord_status(repeat: bool, last_status_was_default: Arc<AtomicBool>) {
+pub async fn event_to_discord_status(discord_user_id: u64, repeat: bool, last_status_was_default: Arc<AtomicBool>) {
     loop {
         println!("Looping!");
-        let event = get_current_event();
+        let event = get_current_event(discord_user_id);
         let mut sleep_duration = Duration::from_secs(60);
 
         if let Some(event) = event {

@@ -3,9 +3,8 @@ use std::fs::read_to_string;
 
 use crate::util::date_perhaps_time_to_utc;
 
-pub fn get_current_event() -> Option<Event> {
-    let calendars = std::fs::read_dir("calendars")
-        .unwrap()
+pub fn get_current_event(discord_user_id: u64) -> Option<Event> {
+    let calendars = std::fs::read_dir(format!("calendars/{discord_user_id}")).ok()?
         .filter_map(|entry| entry.ok())
         .filter(|entry| entry.path().extension().and_then(|s| s.to_str()) == Some("ics"))
         .collect::<Vec<_>>();

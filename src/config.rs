@@ -11,6 +11,7 @@ pub struct Config {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DiscordConfig {
     pub token: String,
+    pub user_id: u64
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,7 +50,7 @@ pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error + Se
     fs::write("config.json", config_json)?;
 
     // Force a refresh of the status in case the new config affects it
-    tokio::spawn(connection::event_to_discord_status(false, Arc::new(AtomicBool::new(false))));
+    tokio::spawn(connection::event_to_discord_status(config.discord.user_id, false, Arc::new(AtomicBool::new(false))));
     
     Ok(())
 }
