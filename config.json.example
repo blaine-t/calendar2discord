@@ -1,0 +1,26 @@
+{
+    "discord": {
+        "token": "YOUR_TOKEN_HERE"
+    },
+    "mappings": {
+        "default": {
+            "message": "Default",
+            "emoji": "💡"
+        },
+        "mapping": [
+            {
+                "event": "Meeting",
+                "message": "Meetin'"
+            },
+            {
+                "event": "Chilling",
+                "emoji": "❄️"
+            },
+            {
+                "event": "Test",
+                "message": "Testing...",
+                "emoji": "🧪"
+            }
+        ]
+    }
+}
