@@ -90,6 +90,7 @@ dependencies = [
  "chrono",
  "icalendar",
  "reqwest",
+ "serde",
  "serde_json",
  "tokio",
 ]
