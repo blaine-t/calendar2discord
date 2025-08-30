@@ -1,4 +1,10 @@
-use crate::models::Status;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Status {
+    pub message: String,
+    pub emoji: String,
+}
 
 pub async fn set_discord_status(status: Status) -> Result<(), reqwest::Error> {
     let client = reqwest::Client::new();

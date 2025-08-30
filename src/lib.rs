@@ -1,5 +1,6 @@
 pub mod calendar;
-pub mod discord;
-pub mod mapping;
-pub mod models;
+pub mod commands;
+pub mod connection;
+pub mod status;
+pub mod config;
 pub mod util;

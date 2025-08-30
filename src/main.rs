@@ -1,21 +1,30 @@
-use calendar2discord::calendar::get_current_event;
-use calendar2discord::discord::set_discord_status;
-use calendar2discord::mapping::map_event_to_status;
-use icalendar::Component;
+use calendar2discord::commands::start_discord_bot;
+use calendar2discord::config::load_config;
+use calendar2discord::connection::event_to_discord_status;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 
 #[tokio::main]
 async fn main() {
-    let event = get_current_event();
-    if let Some(event) = event {
-        let event_name = event.get_summary().unwrap().to_string();
-        let status = map_event_to_status(&event_name);
-        
-        println!("Event: {}", event_name);
-        println!("Mapped to: {} {}", status.emoji, status.message);
-        
-        println!(
-            "{:?}",
-            set_discord_status(status).await
-        );
+    let last_status_was_default = Arc::new(AtomicBool::new(false));
+    tokio::spawn(event_to_discord_status(
+        true,
+        last_status_was_default.clone(),
+    ));
+
+    println!("Starting Discord bot...");
+
+    match load_config() {
+        Ok(config) => {
+            if let Err(e) = start_discord_bot(config.discord.token).await {
+                eprintln!("Error running Discord bot: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Err(e) => {
+            eprintln!("Error loading config: {}", e);
+            eprintln!("Make sure config.json exists and contains a valid Discord token.");
+            std::process::exit(1);
+        }
     }
 }

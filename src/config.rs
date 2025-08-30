@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::fs;
-use crate::models::Status;
+use std::{fs, sync::{atomic::AtomicBool, Arc}};
+use crate::{connection, status::Status};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -16,19 +16,11 @@ pub struct DiscordConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Mappings {
     #[serde(default)]
-    pub default: DefaultMapping,
+    pub default: Status,
     pub mapping: Vec<EventMapping>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct DefaultMapping {
-    #[serde(default)]
-    pub message: String,
-    #[serde(default)]
-    pub emoji: String,
-}
-
-impl Default for DefaultMapping {
+impl Default for Status {
     fn default() -> Self {
         Self {
             message: String::new(),
@@ -46,19 +38,23 @@ pub struct EventMapping {
     pub emoji: Option<String>,
 }
 
-pub fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
+pub fn load_config() -> Result<Config, Box<dyn std::error::Error + Send + Sync>> {
     let config_content = fs::read_to_string("config.json")?;
     let config: Config = serde_json::from_str(&config_content)?;
     Ok(config)
 }
 
-pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let config_json = serde_json::to_string_pretty(config)?;
     fs::write("config.json", config_json)?;
+
+    // Force a refresh of the status in case the new config affects it
+    tokio::spawn(connection::event_to_discord_status(false, Arc::new(AtomicBool::new(false))));
+    
     Ok(())
 }
 
-pub fn add_mapping(event: String, message: Option<String>, emoji: Option<String>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn add_mapping(event: String, message: Option<String>, emoji: Option<String>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut config = load_config()?;
     
     // Check if mapping already exists and update it
@@ -87,7 +83,7 @@ pub fn add_mapping(event: String, message: Option<String>, emoji: Option<String>
     Ok(())
 }
 
-pub fn remove_mapping(event: &str) -> Result<bool, Box<dyn std::error::Error>> {
+pub fn remove_mapping(event: &str) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
     let mut config = load_config()?;
     let original_len = config.mappings.mapping.len();
     
@@ -103,12 +99,12 @@ pub fn remove_mapping(event: &str) -> Result<bool, Box<dyn std::error::Error>> {
     Ok(removed)
 }
 
-pub fn list_mappings() -> Result<Vec<EventMapping>, Box<dyn std::error::Error>> {
+pub fn list_mappings() -> Result<Vec<EventMapping>, Box<dyn std::error::Error + Send + Sync>> {
     let config = load_config()?;
     Ok(config.mappings.mapping.clone())
 }
 
-pub fn update_default_mapping(message: Option<String>, emoji: Option<String>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn update_default_mapping(message: Option<String>, emoji: Option<String>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut config = load_config()?;
     
     if let Some(msg) = message {
