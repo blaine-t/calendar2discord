@@ -21,7 +21,7 @@ pub async fn set_discord_status(status: Status) -> Result<(), reqwest::Error> {
         .patch("https://discord.com/api/v10/users/@me/settings")
         .header(
             "authorization",
-            std::env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN environment variable not set"),
+            std::env::var("DISCORD_USER_TOKEN").expect("DISCORD_USER_TOKEN environment variable not set"),
         )
         .header("Content-Type", "application/json")
         .body(body)

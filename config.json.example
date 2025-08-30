@@ -1,6 +1,6 @@
 {
     "discord": {
-        "token": "YOUR_TOKEN_HERE"
+        "token": "HOLDOVER_TIL_REFACTOR"
     },
     "mappings": {
         "default": {
